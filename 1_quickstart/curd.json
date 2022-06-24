@@ -1,0 +1,223 @@
+# 4 写入文档
+# 4.1 写入单条文档
+DELETE books
+POST books/_doc
+{
+  "title": "Programming Kubernetes",
+  "isbn": "9781617297618",
+  "pageCount": 345,
+  "category": "Cloud Native"
+}
+
+# 4.2 设置写入的 doc id 为 1
+PUT books/_doc/1
+{
+  "title": "Istio in Action",
+  "isbn": "9781617295829",
+  "pageCount": 480,
+  "category": "Cloud Native"
+}
+
+# 4.3 使用 bulk API 可以在单次请求中批量写入多条文档
+POST books/_bulk
+{"index": {"_id": 2}}
+{"title":"Elasticsearch in Action","isbn":"9781617299858","pageCount":475,"category": "Search"}
+{"index": {"_id": 3}}
+{"title":"Relevant Search","isbn":"9781617292774","pageCount":360,"category": "Search"}
+{"index": {"_id": 4}}
+{"title":"Modern Java in Action","isbn":"9781617293566","pageCount":592,"category": "Java"}
+
+# 5 查询文档
+# 5.1 获取索引中指定 doc id 的文档
+GET books/_doc/1
+
+# 5.2 查询 books 索引，不指定任何过滤条件，默认最多返回 10 条文档
+GET books/_search
+
+# 5.3 查询 title 字段中含有 action 的文档，不区分大小写
+GET books/_search
+{
+  "query": {
+    "match": {
+      "title": "action"
+    }
+  }
+}
+
+# 5.4 查询 category.keyword 字段值是 Cloud Native 的文档，区分大小写
+GET books/_search
+{
+  "query": {
+    "term": {
+      "category.keyword": {
+        "value": "Cloud Native"
+      }
+    }
+  }
+}
+
+# 5.5 同时满足 title 字段中含有 action 以及 category.keyword 字段值是 Cloud Native 两个条件的文档才算匹配
+GET books/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "match": {
+            "title": "action"
+          }
+        },
+        {
+          "term": {
+            "category.keyword": {
+              "value": "Cloud Native"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+
+# 5.6 聚合查询，查询 books 索引中每种类别书籍的数量
+GET books/_search
+{
+  "size":"
+  }
+}
+# 查询 doc id 为 1 的这条文档
+GET books/_doc/1
+
+# 6.4 使用 Update By Query API 来根据查询条件批量更新文档
+POST books/_update_by_query
+{
+  "query": {
+    "range": {
+      "pageCount": {
+        "lte": 400
+      }
+    }
+  },
+  "script": {
+    "source": "ctx._source.description = 'quickStart'"
+  }
+}
+
+# 先获取当前索引的 _seq_no 和 _primary_term 的值
+GET books/_doc/1
+
+# 更新文档时指定 _seq_no 和 _primary_term
+PUT books/_doc/1?if_seq_no=9&if_primary_term=1
+{
+  "doc": {
+    "pageCount": 500
+  }
+}
+
+# 如果指定的 _seq_no 和 _primary_term 不等于当前更新的文档中的值，那么更新将会失败
+PUT books/_doc/1?if_seq_no=9&if_primary_term=1
+{
+  "doc": {
+    "pageCount": 500
+  }
+}
+
+# 7 删除文档
+# 7.1 删除 doc id 为 1 的文档
+DELETE books/_doc/1
+
+# 7.2 根据查询条件批量删除文档, 删除所有 pageCount 小于等于 400 的文档
+POST books/_delete_by_query
+{
+  "query": {
+    "range": {
+      "pageCount": {
+        "lte": 400
+      }
+    }
+  }
+}
+
+# 8 索引设置
+# 设置索引分片数为 3，设置 pageCount 字段的类型为 integer
+PUT index-1
+{
+  "settings": { // 索引设置 
+    "number_of_shards": 3  // 设置索引分片数，默认是 1
+  },
+  "mappings": { // 字段映射
+    "properties": {
+      "pageCount": {
+        "type": "integer" // 将字段设置为整数类型，节省存储空间
+      }
+    }
+  }
+}
+
+# 查看索引设置
+GET index-1
+
+# 9 文本分析
+# 9.1 使用默认的 standard 分析器分析文本
+POST _analyze
+{
+  "analyzer": "standard", // standard 是默认使用的分析器 
+  "text": "Elasticsearch in Action."
+}
+
+# 9.2 whitespace 分析器根据空格切分单词，不做小写转换，也不会去除标点符号
+POST _analyze
+{
+  "analyzer": "whitespace",
+  "text": "Elasticsearch in Action."
+}
+
+# 9.3 keyword 分析器不对文本做切分
+POST _analyze
+{
+  "analyzer": "keyword",
+  "text": "Elasticsearch in Action."
+}
+
+# 9.4 指定索引字段的分析器对文本进行分析
+POST books/_analyze
+{
+  "field": "category.keyword",
+  "text": "Cloud Compute"
+}
+
+# 9.5 自定义分析器
+PUT my-index
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "my-analyzer": {
+          "type": "custom",
+          "char_filter": [
+            "html_strip"
+          ],
+          "tokenizer": "whitespace",
+          "filter": [
+            "uppercase"
+          ]
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "content": {
+        "type": "text",
+        "analyzer": "my-analyzer"
+      }
+    }
+  }
+}
+
+# 测试自定义分析器
+POST my-index/_analyze
+{
+  "field": "content",
+  "text": "<h1>Quick fox jumps</h1>"
+}
