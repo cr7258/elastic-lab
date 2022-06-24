@@ -82,7 +82,49 @@ GET books/_search
 # 5.6 聚合查询，查询 books 索引中每种类别书籍的数量
 GET books/_search
 {
-  "size":"
+  "size": 0, // 不返回文档，只返回聚合结果 
+  "aggs": {
+    "my_category_agg": {
+      "terms": {
+        "field": "category.keyword",
+        "size": 10
+      }
+    }
+  }
+}
+
+# 6 更新文档
+# 6.1 覆盖数据，可以理解为先删除现有文档，再创建新的文档。如果该 doc id 的文档不存在，则创建一个新的文档。
+PUT books/_doc/1
+{
+  "title": "Cloud Native Patterns",
+  "isbn": "9781617294297",
+  "category": "Cloud Native"
+}
+# 查询 doc id 为 1 的这条文档
+GET books/_doc/1
+
+# 6.2 部分更新文档，只会对相应的字段做增量修改
+POST books/_update/1
+{
+  "doc": {
+    "pageCount": 400
+  }
+}
+# 查询 doc id 为 1 的这条文档
+GET books/_doc/1
+
+# 6.3 使用脚本更新文档
+POST books/_update/1
+{
+  "script": {
+    "source": """
+      if(ctx._source.pageCount > 200) {
+        ctx._source.pageCount += 200;
+      }else {
+        ctx._source.pageCount = 99;
+      }
+    """
   }
 }
 # 查询 doc id 为 1 的这条文档
