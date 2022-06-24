@@ -104,17 +104,17 @@ PUT books/_doc/1
 # 查询 doc id 为 1 的这条文档
 GET books/_doc/1
 
-# 6.2 部分更新文档，只会对相应的字段做增量修改
+# 6.2 部分更新文档，只会对相应的字段做增量修改，将 pageCount 字段的值被设置为 400
 POST books/_update/1
 {
-  "doc": {
+  "doc": { // 指定要更新的字段内容
     "pageCount": 400
   }
 }
 # 查询 doc id 为 1 的这条文档
 GET books/_doc/1
 
-# 6.3 使用脚本更新文档
+# 6.3 使用脚本更新文档，当 pageCount 字段的值大于 200 时，将 pageCount 的值加 200，否则将 pageCount 的值设置为 99
 POST books/_update/1
 {
   "script": {
@@ -131,6 +131,7 @@ POST books/_update/1
 GET books/_doc/1
 
 # 6.4 使用 Update By Query API 来根据查询条件批量更新文档
+# 为 pageCount 小于 400 的书籍添加一个新的字段 description，设置值为 quickStart
 POST books/_update_by_query
 {
   "query": {
@@ -145,6 +146,7 @@ POST books/_update_by_query
   }
 }
 
+# 6.5 更新并发控制
 # 先获取当前索引的 _seq_no 和 _primary_term 的值
 GET books/_doc/1
 
@@ -157,6 +159,7 @@ PUT books/_doc/1?if_seq_no=9&if_primary_term=1
 }
 
 # 如果指定的 _seq_no 和 _primary_term 不等于当前更新的文档中的值，那么更新将会失败
+# 当前的 _seq_no 已经加 1 变成 10 了，此次更新将失败
 PUT books/_doc/1?if_seq_no=9&if_primary_term=1
 {
   "doc": {
@@ -229,19 +232,23 @@ POST books/_analyze
 }
 
 # 9.5 自定义分析器
+# 创建一个自定义分析器 my-analyzer，
+# Character filters 使用 html_strip 字符过滤器剔除输入文本中 HTML 标签，
+# tokenizer 使用 whitespace 分词器按照空格切分单词，
+# Token filters 使用 uppercase 字符过滤器将切分后的每个单词转换为大写。
 PUT my-index
 {
   "settings": {
     "analysis": {
       "analyzer": {
         "my-analyzer": {
-          "type": "custom",
-          "char_filter": [
-            "html_strip"
+          "type": "custom", // 自定义分析器
+          "char_filter": [ // 字符串过滤器
+            "html_strip" // 去掉 HTML 标签
           ],
-          "tokenizer": "whitespace",
-          "filter": [
-            "uppercase"
+          "tokenizer": "whitespace", // 分词器，按照空格切分单词
+          "filter": [ // 分词过滤器 
+            "uppercase" // 将切分后的每个单词转换为大写
           ]
         }
       }
@@ -251,7 +258,7 @@ PUT my-index
     "properties": {
       "content": {
         "type": "text",
-        "analyzer": "my-analyzer"
+        "analyzer": "my-analyzer"  // 设置字段使用自定义分析器
       }
     }
   }
