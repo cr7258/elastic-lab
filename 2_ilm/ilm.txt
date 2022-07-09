@@ -1,0 +1,96 @@
+# 将 ILM 刷新时间设定为 1 秒
+PUT _cluster/settings
+{
+  "persistent": {
+    "indices.lifecycle.poll_interval":"1s"
+  }
+}
+
+# 设置 ILM 策略
+PUT _ilm/policy/log-ilm-policy
+{
+  "policy": {
+    "phases": {
+      "hot": {
+        "min_age": "0s",
+        "actions": {
+          "rollover": {
+            "max_docs": 5  // 超过 5 个文档以后 rollover 创建新的索引
+          },
+          "set_priority": {
+            "priority": 100 // 优先级最高，当节点重启后优先恢复 hot 阶段的索引
+          }
+        }
+      },
+      "warm": {
+        "min_age": "60s", // 60s 后进入 warn 阶段
+        "actions": {
+          "allocate": {
+            "number_of_replicas": 0 // 将副本分片数缩减为 0
+          },
+          "set_priority": {
+            "priority": 50
+          }
+        }
+      },
+      "cold": {
+        "min_age": "120s", // 120s 后进入 cold 阶段
+        "actions": {
+          "readonly" : {}, // 将索引设置为只读
+          "set_priority": {
+            "priority": 0
+          }
+        }
+      },
+      "delete": {
+        "min_age": "180s", // 180s 后删除索引
+        "actions": {
+          "delete": {}
+        }
+      }
+    }
+  }
+}
+
+# 设置索引模板
+PUT _index_template/log-template
+{
+  "index_patterns" : [
+      "log-index-*" // 通配符匹配索引
+    ],
+  "template": {
+    "settings" : {
+      "index" : {
+        "lifecycle" : {
+          "name" : "log-ilm-policy",  // 应用 ILM 策略
+          "rollover_alias" : "log-index" // 指定 rollover 别名
+        },
+        "number_of_shards" : "1", // 主分片数
+        "number_of_replicas" : "1"  // 副本分片数
+      }
+    }
+  }
+}
+
+# 创建第一个索引
+PUT log-index-000001
+{
+  "aliases": {
+    "log-index": {
+      "is_write_index": true 
+    }
+  }
+}
+
+#   往索引中插入 5 条数据,观察效果
+POST log-index/_bulk
+{"index":{}}
+{"name":"Erlend","age":16}
+{"index":{}}
+{"name":"Brynjar","age":18}
+{"index":{}}
+{"name":"Fox","age":18}
+{"index":{}}
+{"name":"Frank","age":23}
+{"index":{}}
+{"name":"Sam","age":18}
