@@ -82,7 +82,7 @@ PUT log-index-000001
   }
 }
 
-# 往索引中插入 5 条数据,观察效果
+# 往索引中插入 5 条数据，观察效果
 POST log-index/_bulk
 {"index":{}}
 {"name":"Erlend","age":16}
