@@ -264,7 +264,7 @@ PUT my-index
   }
 }
 
-# 测试自定义分析器
+# 9.6 测试自定义分析器
 POST my-index/_analyze
 {
   "field": "content",

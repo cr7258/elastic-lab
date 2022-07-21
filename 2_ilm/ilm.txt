@@ -1,4 +1,5 @@
-# 将 ILM 刷新时间设定为 1 秒
+# 2 设置 ILM 策略 
+# 2.1 将 ILM 刷新时间设定为 1 秒
 PUT _cluster/settings
 {
   "persistent": {
@@ -6,7 +7,7 @@ PUT _cluster/settings
   }
 }
 
-# 设置 ILM 策略
+# 2.2 创建 ILM 策略
 PUT _ilm/policy/log-ilm-policy
 {
   "policy": {
@@ -52,7 +53,7 @@ PUT _ilm/policy/log-ilm-policy
   }
 }
 
-# 设置索引模板
+# 3 设置索引模板
 PUT _index_template/log-template
 {
   "index_patterns" : [
@@ -72,7 +73,7 @@ PUT _index_template/log-template
   }
 }
 
-# 创建第一个索引
+# 4 创建符合模板的起始索引
 PUT log-index-000001
 {
   "aliases": {
@@ -82,7 +83,7 @@ PUT log-index-000001
   }
 }
 
-# 往索引中插入 5 条数据，观察效果
+# 5 插入数据，观察效果
 POST log-index/_bulk
 {"index":{}}
 {"name":"Erlend","age":16}

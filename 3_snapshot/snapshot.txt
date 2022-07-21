@@ -1,0 +1,84 @@
+# 3 Keystore 添加 MinIO 登录凭据
+# 3.1 重新加载在节点上设置的 keystore
+POST _nodes/reload_secure_settings
+{
+  "secure_settings_password":""
+}
+
+# 4 注册存储库
+# 4.1 设置存储库类型为 s3，在 settings 参数中填写存储库相关信息
+PUT _snapshot/my-repository
+{
+  "type": "s3",
+  "settings": {
+    "bucket": "es-snapshot", // 存储桶名称
+    "client": "minio",  // 和 keystore 中设置的 client_name 一致
+    "endpoint": "http://<ES 公网 IP>:9000" // 存储库 IP 地址
+  }
+}
+
+# 4.2 验证存储库
+POST _snapshot/my-repository/_verify
+
+# 往索引 index-1 中插入 3 条文档
+PUT _bulk
+{"index":{"_index":"index-1"}}
+{"name":"Mark","age":21}
+{"index":{"_index":"index-1"}}
+{"name":"Lisa","age":18}
+{"index":{"_index":"index-1"}}
+{"name":"Jack","age":20}
+
+# 5 创建快照 
+# 5.1 创建快照，不设置任何选项，默认会备份集群中所有的数据流和打开的索引
+PUT _snapshot/my-repository/snapshot-1
+# 5.2 创建快照，选择性地做快照备份
+PUT _snapshot/my-repository/snapshot-2
+{
+  "indices": "index-1,index-2",// 备份的索引和者数据流
+  "ignore_unavailable": true, // 忽略创建快照时不存在的索引
+  "include_global_state": false, // 不备份集群状态和功能状态
+  "partial": true, // 允许对含有不可用分片的索引进行部分快照
+  "metadata": { // 添加自定义元数据到快照
+     "taken_by": "chengzw",
+      "taken_because": "backup before upgrading"
+   }
+}
+
+# 5.3 查看快照信息
+GET _snapshot/my-repository/snapshot-2
+
+# 6 恢复快照
+# 6.1 删除索引 index-1
+DELETE index-1
+
+# 6.2 恢复快照
+POST _snapshot/my-repository/snapshot-1/_restore
+{
+  "indices": "index-1"
+}
+
+# 6.3 查询索引 index-1 
+GET index-1/_search
+
+# 7 SLM 快照生命周期管理
+# 7.1 创建 SLM 策略
+PUT _slm/policy/nightly-snapshots
+{
+  "schedule": "0 30 1 * * ?", // 每天凌晨 1:30  (UTC 时间) 创建快照
+  "name": "<nightly-snapshots-{now/d}>",  // 快照名称, 使用日期数学表达式添加当前日期
+  "repository": "my-repository", // 使用的存储库 
+  "config": { 
+    "indices": ["index-1", "index-2"], // 备份的索引   
+    "ignore_unavailable": true, // 忽略创建快照时不存在的索引
+    "include_global_state": false // 不备份集群状态和功能状态
+  },
+  "retention": {   // 快照保留策略
+    "expire_after": "30d",  // 保留快照 30 天
+    "min_count": 5,  // 保留至少 5 个快照
+    "max_count": 50 // 保留最多 50 个快照
+  }
+}
+
+# 7.2 手动执行 SLM 策略
+POST _slm/policy/nightly-snapshots/_execute
