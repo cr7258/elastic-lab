@@ -1,0 +1,13 @@
+server:
+  port: 10000
+
+elasticsearch:
+  schema: https
+  address: 47.116.59.229:9200
+  username: elastic
+  password: elastic123
+  connectTimeout: 10000
+  socketTimeout: 15000
+  connectionRequestTimeout: 20000
+  maxConnectNum: 100
+  maxConnectPerRoute: 100

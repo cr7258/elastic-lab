@@ -1,0 +1,2 @@
+2022-08-05 15:25:45.955 | ERROR | 26117 |            main | com.elasticlab.ElasticsearchApplication :163  | Bulk had errors
+2022-08-05 15:25:45.957 | ERROR | 26117 |            main | com.elasticlab.ElasticsearchApplication :166  | failed to parse
