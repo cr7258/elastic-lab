@@ -1,10 +1,10 @@
 com/elasticlab/SearchingTest.java
  com.elasticlab.SearchingTest
-com/elasticlab/AggregationsTest.java
- com.elasticlab.AggregationsTest
+com/elasticlab/IndexingTest.java
+ com.elasticlab.IndexingTest
 com/elasticlab/DeletingTest.java
  com.elasticlab.DeletingTest
 com/elasticlab/UpdatingTest.java
  com.elasticlab.UpdatingTest
-com/elasticlab/IndexingTest.java
- com.elasticlab.IndexingTest
+com/elasticlab/AggregationsTest.java
+ com.elasticlab.AggregationsTest

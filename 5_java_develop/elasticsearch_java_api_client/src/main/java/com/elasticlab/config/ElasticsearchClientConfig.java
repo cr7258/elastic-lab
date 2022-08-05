@@ -11,7 +11,6 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
 import org.elasticsearch.client.RestClient;
@@ -67,7 +66,7 @@ public class ElasticsearchClientConfig {
                 new UsernamePasswordCredentials(elasticsearchConfig.getUsername(), elasticsearchConfig.getPassword()));
 
         // 我们部署的 Elasticsearch 使用的是自签名的 CA，需要设置信任的 CA 证书
-        String filePath = new File("src/main/resources/http_ca.crt").getAbsolutePath();
+        String filePath = new File("src/main/resources/ca.crt").getAbsolutePath();
         Path caCertificatePath = Paths.get(filePath);
 
         CertificateFactory factory = null;
@@ -86,20 +85,9 @@ public class ElasticsearchClientConfig {
         // 构造 HTTPS 客户端请求访问
         RestClientBuilder builder = RestClient.builder(httpHost)
                 .setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder
-                        .setSSLContext(sslContext)
-                        .setDefaultCredentialsProvider(credentialsProvider)
-                        .setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)   // 不验证 SSL 证书主机名
-                        .setMaxConnTotal(elasticsearchConfig.getMaxConnectNum())  // 异步连接数配置
-                        .setMaxConnPerRoute(elasticsearchConfig.getMaxConnectPerRoute()));
-
-
-        // 异步连接延时配置
-        builder.setRequestConfigCallback(requestConfigBuilder -> {
-            requestConfigBuilder.setConnectTimeout(elasticsearchConfig.getConnectTimeout());
-            requestConfigBuilder.setSocketTimeout(elasticsearchConfig.getSocketTimeout());
-            requestConfigBuilder.setConnectionRequestTimeout(elasticsearchConfig.getConnectionRequestTimeout());
-            return requestConfigBuilder;
-        });
+                        .setSSLContext(sslContext)                                // 设置 SSL 加密通信的方式
+                        .setDefaultCredentialsProvider(credentialsProvider)       // 设置用户名密码
+                        .setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE));  // 不验证 SSL 证书主机名
 
         return builder.build();
     }
