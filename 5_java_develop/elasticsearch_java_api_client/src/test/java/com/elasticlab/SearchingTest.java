@@ -81,20 +81,17 @@ public class SearchingTest {
     @Test
     public void search() throws IOException {
         String searchText = "computer";
-        SearchRequest request = SearchRequest.of(s -> s
-                .index("products")
-                .query(q -> q
-                        .match(t -> t
-                                .field("name")
-                                .query(searchText)
+        SearchResponse<Product> response = esClient.search(s -> s
+                        .index("products")
+                        .query(q -> q
+                                .match(t -> t
+                                        .field("name")
+                                        .query(searchText)
+                                )
                         )
-                )
-        );
-        log.info("Search Request: " + request.toString());
-        SearchResponse<Product> response = esClient.search(request, Product.class);
+                , Product.class);
         TotalHits total = response.hits().total();
         boolean isExactResult = total.relation() == TotalHitsRelation.Eq;
-
         if (isExactResult) {
             log.info("There are " + total.value() + " results");
         } else {
