@@ -8,10 +8,7 @@ import co.elastic.clients.elasticsearch.core.IndexRequest;
 import co.elastic.clients.elasticsearch.core.IndexResponse;
 import co.elastic.clients.elasticsearch.core.bulk.BulkResponseItem;
 import co.elastic.clients.json.JsonData;
-import co.elastic.clients.json.JsonpMapper;
 import com.elasticlab.pojo.Product;
-import jakarta.json.spi.JsonProvider;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -48,9 +45,9 @@ public class IndexingTest {
     public void indexObject() throws IOException {
         Product product = new Product("sn10001", "computer", 9999.99);
         IndexResponse response = esClient.index(i -> i
-                .index("products")
-                .id(product.getId())
-                .document(product)
+                .index("products") // 索引名
+                .id(product.getId()) // 文档 id
+                .document(product)   // 数据
         );
         log.info("Indexed Response: " + response);
     }
