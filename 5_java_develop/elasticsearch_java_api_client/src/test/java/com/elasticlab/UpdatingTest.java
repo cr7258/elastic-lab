@@ -60,7 +60,7 @@ public class UpdatingTest {
                 .query(q -> q
                         .match(m -> m
                                 .field("name")
-                                .query("phone"))));
+                                .query("T-shirt"))));
         log.info("Update doc count: " + response.total());
     }
 }

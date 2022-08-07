@@ -40,7 +40,7 @@ public class SearchingTest {
      * @throws IOException
      */
     @Test
-    public void getProductById() throws IOException {
+    public void getById() throws IOException {
         GetResponse<Product> response = esClient.get(g -> g
                         .index("products")
                         .id("sn10001"),
