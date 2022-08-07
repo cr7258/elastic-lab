@@ -36,7 +36,7 @@ public class UpdatingTest {
      * @throws IOException
      */
     @Test
-    public void updateDoc() throws IOException {
+    public void updateById() throws IOException {
         Product product = new Product();
         product.setPrice(7777.77);
         UpdateResponse<Product> response = esClient.update(u -> u
