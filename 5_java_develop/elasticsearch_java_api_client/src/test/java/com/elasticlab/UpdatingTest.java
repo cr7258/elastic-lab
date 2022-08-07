@@ -41,7 +41,7 @@ public class UpdatingTest {
         product.setPrice(7777.77);
         UpdateResponse<Product> response = esClient.update(u -> u
                 .index("products")
-                .id("sn10005")
+                .id("sn10001")
                 .doc(product), Product.class);
         log.info("Update response: " + response.toString());
     }
