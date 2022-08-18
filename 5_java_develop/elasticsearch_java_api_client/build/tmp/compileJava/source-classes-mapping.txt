@@ -1,8 +1,0 @@
-com/elasticlab/pojo/Product.java
- com.elasticlab.pojo.Product
-com/elasticlab/ElasticsearchApplication.java
- com.elasticlab.ElasticsearchApplication
-com/elasticlab/config/ElasticsearchClientConfig.java
- com.elasticlab.config.ElasticsearchClientConfig
-com/elasticlab/config/ElasticsearchConfig.java
- com.elasticlab.config.ElasticsearchConfig

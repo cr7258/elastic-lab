@@ -1,5 +1,0 @@
-elasticsearch:
-  schema: https
-  address: 47.116.59.229:9200
-  username: elastic
-  password: elastic123

@@ -1,4 +1,3 @@
-logs
-.gradle
-.idea
-build
+5_java_develop/elasticsearch_java_api_client/logs
+5_java_develop/elasticsearch_java_api_client/.idea
+5_java_develop/elasticsearch_java_api_client/build
