@@ -1,5 +1,5 @@
 elasticsearch:
   schema: https
-  address: 47.116.59.229:9200
+  address: <公网 IP>:9200 # 需要修改  
   username: elastic
   password: elastic123
